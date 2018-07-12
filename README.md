@@ -29,7 +29,7 @@ sudo unzip Choropleth-Map-master.zip && sudo ./start.sh
 10) После окончания установки перейдите в директорию  с приложением, откройте консоль и введите:
 python main.py
 
-And some screen shots of results:
+Screenshots of results in folder 'screenshots':
 
 
 
