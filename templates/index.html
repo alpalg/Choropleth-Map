@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Task for ActiveWizards</title>
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="{{ url_for('static', filename='datamaps.world.hires.min.js') }}"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+</head>
+
+<body>
+  <div id="container1" style="position: relative; width: 100%; max-height: 100%;"></div>
+  <script>
+        var dataset = {{projects_by_countries | safe}};
+
+        var onlyValues = Object.keys(dataset).map(function (key, index) {
+            return dataset[key]['summary'];
+        });
+        var minValue = Math.min.apply(null, onlyValues),
+            maxValue = Math.max.apply(null, onlyValues);
+
+        var paletteScale = d3.scale.linear()
+            .domain([minValue, maxValue])
+            .range(["#EFEFFF", "#349345"]);
+
+        Object.keys(dataset).map(function (key, index) {
+            var value = dataset[key]['summary'];
+            dataset[key]['fillColor'] = paletteScale(value);
+        });
+
+        var map = new Datamap({
+            scope: 'world',
+            element: document.getElementById('container1'),
+            projection: 'mercator',
+            height: 990,
+
+            fills: {defaultFill: '#F5F5F5'},
+            data: dataset,
+            geographyConfig: {
+                borderColor: '#DEDEDE',
+                highlightBorderWidth: 2,
+                // don't change color on mouse hover
+                highlightFillColor: function (geo) {
+                    return geo['fillColor'] || '#F5F5F5';
+                },
+                label: 'SS',
+                // only change border
+                highlightBorderColor: '#B7B7B7',
+                // show desired information in tooltip
+                popupTemplate: function (geo, data) {
+                    // don't show tooltip if country don't present in dataset
+                    if (!data) {
+                        return;
+                    }
+                    // tooltip content
+                    var i;
+                    text = '<ul class="list-group">';
+                    for (i = 0; i < data['projects'].length; i++) {
+                        text += '<li class="list-group-item">' + data['projects'][i]['project_name'] + ' --' + data['projects'][i]['lendprojectcost'] + '$' + "</li>";
+                    }
+                    return ['<div class="hoverinfo container col-xs-12">',
+                        '<font size="4">', geo.properties.name, '</font>',
+                        '<br>Summary cost is : <strong>', data.summary, '</strong>',
+                        '<br><strong>', text, '</strong>',
+                        '</div>'].join('');
+                }
+            }
+
+
+        });
+  </script>
+</body>
+</html>
